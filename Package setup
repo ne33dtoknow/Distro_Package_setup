@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Function to install packages for Debian-based distributions
+install_debian() {
+    sudo apt update
+    sudo apt install -y libreoffice htop filezilla
+    flatpak install -y --system flathub com.discordapp.Discord com.brave.Browser
+}
+
+# Function to install packages for Arch-based distributions
+install_arch() {
+    sudo pacman -Syu
+    sudo pacman -S --noconfirm libreoffice htop filezilla
+    flatpak install -y --system flathub com.discordapp.Discord com.brave.Browser
+}
+
+# Function to install packages for Fedora-based distributions
+install_fedora() {
+    sudo dnf install -y libreoffice htop filezilla
+    flatpak install -y --system flathub com.discordapp.Discord com.brave.Browser
+}
+
+# Function to install packages for openSUSE
+install_opensuse() {
+    sudo zypper refresh
+    sudo zypper install -y libreoffice htop filezilla
+    flatpak install -y --system flathub com.discordapp.Discord com.brave.Browser
+}
+
+# Install Flatpak if not already installed
+install_flatpak() {
+    case $ID in
+        ubuntu|debian|linuxmint|pop|mx|elementary|ubuntustudio|linuxlite)
+            sudo apt install -y flatpak
+            ;;
+        manjaro|arch|endeavouros|garuda)
+            sudo pacman -S --noconfirm flatpak
+            ;;
+        fedora|centos|qubes)
+            sudo dnf install -y flatpak
+            ;;
+        opensuse|opensuse-leap|opensuse-tumbleweed)
+            sudo zypper install -y flatpak
+            ;;
+        *)
+            echo "Flatpak installation is not configured for this distribution."
+            ;;
+    esac
+}
+
+# Add Flathub repository for Flatpak
+add_flathub_repo() {
+    flatpak remote-add --if-not-exists --system flathub https://flathub.org/repo/flathub.flatpakrepo
+}
+
+# Detect the Linux distribution
+. /etc/os-release
+
+# Install Flatpak and add Flathub repository
+install_flatpak
+add_flathub_repo
+
+# Install packages based on the distribution
+case $ID in
+    ubuntu|debian|linuxmint|pop|mx|elementary|ubuntustudio|linuxlite)
+        install_debian
+        ;;
+    manjaro|arch|endeavouros|garuda)
+        install_arch
+        ;;
+    fedora|centos|qubes)
+        install_fedora
+        ;;
+    opensuse|opensuse-leap|opensuse-tumbleweed)
+        install_opensuse
+        ;;
+    *)
+        echo "Unsupported distribution: $ID"
+        exit 1
+        ;;
+esac
+
+echo "Installation completed."
